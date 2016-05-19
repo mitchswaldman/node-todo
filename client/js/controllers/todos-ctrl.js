@@ -4,13 +4,20 @@ angular.module('todoController', [])
 	.controller('mainController', ['$scope','$http','Todos', function($scope, $http, Todos) {
 		$scope.formData = {};
 		$scope.loading = true;
+	        $scope.review = "";
+		var setTodos = function(todos){
+		    $scope.todos = todos;
+$scope.completedTodos = $scope.todos.filter(function(todo){return todo.completed;}).length;
+                                $scope.snoozedTodos = $scope.todos.filter(function(todo){return todo.snoozed;}).length;
+                                $scope.review = "You have completed " + $scope.completedTodos + " tasks and snoozed " + $scope.snoozedTodos + " tasks out of "+$scope.todos.length + " tasks.";
+		}
 
-		// GET =====================================================================
+	        // GET =====================================================================
 		// when landing on the page, get all todos and show them
 		// use the service to get all the todos
 		Todos.get()
 			.success(function(data) {
-				$scope.todos = data;
+				setTodos(data);
 				$scope.loading = false;
 			});
 
@@ -30,9 +37,31 @@ angular.module('todoController', [])
 					.success(function(data) {
 						$scope.loading = false;
 						$scope.formData = {}; // clear the form so our user is ready to enter another
-						$scope.todos = data; // assign our new list of todos
+						setTodos(data); // assign our new list of todos
 					});
 			}
+		};
+	        
+	        // UPDATE ==================
+	        $scope.updateTodo = function(todo){
+		    Todos.update(todo)
+		         .success(function(data){
+			      setTodos(data);
+			 });
+		};
+	    
+	        $scope.snoozeTodo = function(todo){
+		    
+			todo.snoozed = !todo.snoozed;
+			$scope.updateTodo(todo);
+		    
+		}
+	        // DLETE ====================
+	        $scope.deleteTodo = function(todo){
+		    Todos.deleteTodo(todo)
+		         .success(function(data){
+			     setTodos(data);
+			 });
 		};
 
 	}]);

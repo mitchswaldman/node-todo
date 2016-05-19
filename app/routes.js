@@ -20,7 +20,23 @@ module.exports = function(app) {
 		// use mongoose to get all todos in the database
 		getTodos(res);
 	});
-
+        app.put('/api/todos/:id', function(req, res){
+	    Todo.findById(req.params.id, function( err, todo){
+		if(err) res.send(err);
+		todo.completed = req.body.completed || false;
+		todo.snoozed = req.body.snoozed || false;
+		todo.save(function(err){
+		   if(err) res.send(err);
+		   getTodos(res);
+		});
+	    });
+	});
+        app.delete('/api/todos/:id', function(req, res){
+	    Todo.findById(req.params.id).remove(function(err){
+		if(err) res.send(err);
+		getTodos(res);
+	    });
+	});
 	// create todo and send back all todos after creation
 	app.post('/api/todos', function(req, res) {
 
@@ -40,6 +56,6 @@ module.exports = function(app) {
 
 	// application -------------------------------------------------------------
 	app.get('*', function(req, res) {
-		res.sendfile('./public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
+		res.sendfile('./client/index.html'); // load the single view file (angular will handle the page changes on the front-end)
 	});
 };
